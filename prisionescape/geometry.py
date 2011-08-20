@@ -34,6 +34,13 @@ class Rectangle(object):
         self.x = x
         self.y = y
 
+    @property
+    def points(self):
+        return (self.left, self.top,
+                self.right, self.top,
+                self.right, self.bottom,
+                self.left, self.bottom)
+
 
     def get_left(self):
         return self.x
@@ -47,14 +54,17 @@ class Rectangle(object):
         self.x = right - self.width
     right = property(get_right, set_right)
 
-
-    @property
-    def top(self):
+    def get_bottom(self):
         return self.y
+    def set_bottom(self, bottom):
+        self.y = bottom
+    bottom = property(get_bottom, set_bottom)
 
-    @property
-    def bottom(self):
-        return self.y + self.width()
+    def get_top(self):
+        return self.y + self.height
+    def set_top(self, top):
+        self.y = top - self.height
+    top = property(get_top, set_top)
 
     @property
     def topleft(self):
