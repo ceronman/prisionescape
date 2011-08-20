@@ -1,10 +1,11 @@
 from prisionescape import configuration
-from prisionescape.geometry import Rectangle
+from prisionescape.geometry import Rectangle, Vector
 from pyglet.graphics import Batch, draw
 from pyglet.resource import image
 from pyglet.sprite import Sprite
 from pyglet.window import key
 from pyglet.gl.gl import GL_POINTS, glColor4f
+import itertools
 
 
 class Character(object):
@@ -41,33 +42,56 @@ class Character(object):
 
 class Prisioner(Character):
 
+    batch = Batch()
+
+    frame_files = {
+        'left':  ['prisioner_left_1.png',
+                  'prisioner_left_2.png',
+                  'prisioner_left_push.png'],
+
+        'right': ['prisioner_right_1.png',
+                  'prisioner_right_2.png',
+                  'prisioner_right_push.png'],
+
+        'down':  ['prisioner_front_1.png',
+                  'prisioner_front_2.png',
+                  'prisioner_front_push.png'],
+
+        'up':    ['prisioner_back_1.png',
+                  'prisioner_back_2.png',
+                  'prisioner_back_push.png']
+    }
 
     def __init__(self, map):
         super(Prisioner, self).__init__(map)
 
-        self.sprite = Sprite(image('prisioner0.png'),
-                             batch=Character.batch)
-
+        self._load_images()
+        self.sprite = Sprite(self.images['down'][1], batch=Prisioner.batch)
         self.speed = 3
+        self.frame_step = itertools.cycle([0] * 10 + [1] * 10)
 
         self.rect.go_to(40, 40)
         self._adjust_rectangle()
 
     def update(self, window):
-        direction_x = 0
-        direction_y = 0
+        direction = Vector(0, 0)
+        pushing = False
         if window.keys[key.LEFT]:
-            direction_x = -1
+            direction.x = -1
         if window.keys[key.RIGHT]:
-            direction_x = 1
+            direction.x = 1
         if window.keys[key.UP]:
-            direction_y = 1
+            direction.y = 1
         if window.keys[key.DOWN]:
-            direction_y = -1
+            direction.y = -1
+        if window.keys[key.SPACE]:
+            pushing = True
 
-        if (direction_x, direction_y) != (0, 0):
-            self.rect.move(direction_x * self.speed, direction_y * self.speed)
-            self._check_map_collision(direction_x, direction_y)
+        self._update_frame(direction, pushing)
+        if direction != Vector(0, 0):
+            direction = direction * self.speed
+            self.rect.move(direction.x, direction.y)
+            self._check_map_collision(direction.x, direction.y)
             self._adjust_rectangle()
 
     def _check_map_collision(self, direction_x, direction_y):
@@ -75,14 +99,16 @@ class Prisioner(Character):
         speed = self.speed
         if direction_x > 0:
             tile1 = self.map.get_tile_at(rect.right + 1, rect.top - speed)
-            tile2 = self.map.get_tile_at(rect.right + 1, rect.bottom + speed)
-            tile = tile1 or tile2
+            tile2 = self.map.get_tile_at(rect.right + 1, rect.center.y)
+            tile3 = self.map.get_tile_at(rect.right + 1, rect.bottom + speed)
+            tile = tile1 or tile2 or tile3
             if tile is not None:
                 rect.right = tile.rect.left - 1
         if direction_x < 0:
             tile1 = self.map.get_tile_at(rect.left - 1, rect.top - speed)
-            tile2 = self.map.get_tile_at(rect.left - 1, rect.bottom + speed)
-            tile = tile1 or tile2
+            tile2 = self.map.get_tile_at(rect.left - 1, rect.center.y)
+            tile3 = self.map.get_tile_at(rect.left - 1, rect.bottom + speed)
+            tile = tile1 or tile2 or tile3
             if tile is not None:
                 rect.left = tile.rect.right + 1
         if direction_y < 0:
@@ -98,3 +124,22 @@ class Prisioner(Character):
             if tile is not None:
                 rect.top = tile.rect.bottom - 1
 
+    def _update_frame(self, direction, pushing=False):
+        side = None
+        if direction.x > 0:
+            side = 'right'
+        if direction.x < 0:
+            side = 'left'
+        if direction.y > 0:
+            side = 'up'
+        if direction.y < 0:
+            side = 'down'
+
+        if side is not None:
+            step = next(self.frame_step) if not pushing else 2
+            self.sprite.image = self.images[side][step]
+
+    def _load_images(self):
+        self.images = {}
+        for category, files in self.frame_files.iteritems():
+            self.images[category] = [image(file) for file in files]

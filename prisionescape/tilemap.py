@@ -1,4 +1,4 @@
-from prisionescape.geometry import Position, Rectangle
+from prisionescape.geometry import Vector, Rectangle
 from pyglet import resource
 from pyglet.graphics import Batch
 from pyglet.sprite import Sprite
@@ -22,7 +22,7 @@ class TileMap(object):
         self.tiles = []
         self.tile_width = 0
         self.tile_height = 0
-        self.camera_position = Position()
+        self.camera_position = Vector()
 
     def load_tiles(self, *args):
         self.tile_images = []

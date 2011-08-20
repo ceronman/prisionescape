@@ -1,4 +1,4 @@
-class Position(object):
+class Vector(object):
 
     def __init__(self, x=0, y=0):
         self.set(x, y)
@@ -14,6 +14,15 @@ class Position(object):
     @property
     def xy(self):
         return (self.x, self.y)
+
+    def __eq__(self, vector):
+        return (vector.x == self.x and vector.y == self.y)
+
+    def __mul__(self, scalar):
+        return Vector(self.x * scalar, self.y * scalar)
+
+    def __str__(self):
+        return 'Vector: (%d, %d)' % self.xy
 
 class Rectangle(object):
 
@@ -68,25 +77,33 @@ class Rectangle(object):
 
     @property
     def topleft(self):
-        return Position(self.left, self.top)
+        return Vector(self.left, self.top)
 
     @property
     def topright(self):
-        return Position(self.right, self.top)
+        return Vector(self.right, self.top)
 
     @property
     def bottomleft(self):
-        return Position(self.left, self.bottom)
+        return Vector(self.left, self.bottom)
 
     @property
     def bottomright(self):
-        return Position(self.right, self.bottom)
+        return Vector(self.right, self.bottom)
 
     @property
     def center(self):
-        return Position(self.x + self.width/2, self.y + self.height/2)
+        return Vector(self.x + self.width/2, self.y + self.height/2)
 
     @center.setter
     def center(self, x, y):
         self.x = x - self.width/2
         self.y = y - self.height/2
+
+
+class Direction(object):
+
+    LEFT = 1
+    RIGHT = 2
+    UP = 3
+    DOWN = 4
