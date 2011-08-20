@@ -1,10 +1,10 @@
 from prisionescape import configuration
-from prisionescape.geometry import Rectangle, Vector
+from prisionescape.geometry import Rectangle, Vector, Side
+from pyglet.gl.gl import GL_POINTS, glColor4f
 from pyglet.graphics import Batch, draw
 from pyglet.resource import image
 from pyglet.sprite import Sprite
 from pyglet.window import key
-from pyglet.gl.gl import GL_POINTS, glColor4f
 import itertools
 
 
@@ -45,49 +45,64 @@ class Prisioner(Character):
     batch = Batch()
 
     frame_files = {
-        'left':  ['prisioner_left_1.png',
-                  'prisioner_left_2.png',
-                  'prisioner_left_push.png'],
+        Side.LEFT:  ['prisioner_left_1.png',
+                     'prisioner_left_2.png',
+                     'prisioner_left_push.png'],
 
-        'right': ['prisioner_right_1.png',
-                  'prisioner_right_2.png',
-                  'prisioner_right_push.png'],
+        Side.RIGHT: ['prisioner_right_1.png',
+                     'prisioner_right_2.png',
+                     'prisioner_right_push.png'],
 
-        'down':  ['prisioner_front_1.png',
-                  'prisioner_front_2.png',
-                  'prisioner_front_push.png'],
+        Side.DOWN:  ['prisioner_front_1.png',
+                     'prisioner_front_2.png',
+                     'prisioner_front_push.png'],
 
-        'up':    ['prisioner_back_1.png',
-                  'prisioner_back_2.png',
-                  'prisioner_back_push.png']
+        Side.UP:    ['prisioner_back_1.png',
+                     'prisioner_back_2.png',
+                     'prisioner_back_push.png']
     }
 
     def __init__(self, map):
         super(Prisioner, self).__init__(map)
 
         self._load_images()
-        self.sprite = Sprite(self.images['down'][1], batch=Prisioner.batch)
-        self.speed = 3
-        self.frame_step = itertools.cycle([0] * 10 + [1] * 10)
+        self.speed = 5
+        self.step = 0
+        self.frame_steps = itertools.cycle([0] * 10 + [1] * 10)
+        self.side = Side.DOWN
+        self.pushing = False
+        self.sprite = Sprite(self.images[Side.DOWN][0], batch=Prisioner.batch)
 
         self.rect.go_to(40, 40)
         self._adjust_rectangle()
+        self._update_frame()
 
     def update(self, window):
         direction = Vector(0, 0)
         pushing = False
         if window.keys[key.LEFT]:
             direction.x = -1
+            self.side = Side.LEFT
+            self._update_step()
         if window.keys[key.RIGHT]:
             direction.x = 1
+            self.side = Side.RIGHT
+            self._update_step()
         if window.keys[key.UP]:
             direction.y = 1
+            self.side = Side.UP
+            self._update_step()
         if window.keys[key.DOWN]:
             direction.y = -1
-        if window.keys[key.SPACE]:
-            pushing = True
+            self.side = Side.DOWN
+            self._update_step()
+        if window.keys[key.LSHIFT] or window.keys[key.RSHIFT]:
+            self.speed = 2
+        else:
+            self.speed = 4
+        self.pushing = bool(window.keys[key.SPACE])
 
-        self._update_frame(direction, pushing)
+        self._update_frame()
         if direction != Vector(0, 0):
             direction = direction * self.speed
             self.rect.move(direction.x, direction.y)
@@ -124,20 +139,12 @@ class Prisioner(Character):
             if tile is not None:
                 rect.top = tile.rect.bottom - 1
 
-    def _update_frame(self, direction, pushing=False):
-        side = None
-        if direction.x > 0:
-            side = 'right'
-        if direction.x < 0:
-            side = 'left'
-        if direction.y > 0:
-            side = 'up'
-        if direction.y < 0:
-            side = 'down'
+    def _update_frame(self):
+        step = self.step if not self.pushing else 2
+        self.sprite.image = self.images[self.side][step]
 
-        if side is not None:
-            step = next(self.frame_step) if not pushing else 2
-            self.sprite.image = self.images[side][step]
+    def _update_step(self):
+        self.step = next(self.frame_steps)
 
     def _load_images(self):
         self.images = {}

@@ -101,7 +101,7 @@ class Rectangle(object):
         self.y = y - self.height/2
 
 
-class Direction(object):
+class Side(object):
 
     LEFT = 1
     RIGHT = 2
