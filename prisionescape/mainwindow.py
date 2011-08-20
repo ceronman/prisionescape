@@ -1,6 +1,7 @@
 from prisionescape.tilemap import LevelMap
-from pyglet import clock
+from pyglet import clock, gl
 from pyglet.window import Window, key
+from prisionescape.characters import Prisioner
 
 
 class MainWindow(Window):
@@ -8,23 +9,19 @@ class MainWindow(Window):
     def __init__(self):
         super(MainWindow, self).__init__(800, 600)
         self.set_caption(u'Pyglet Test')
+        gl.glClearColor(0.5, 0.5, 0.5, 255)
 
         self.keys = key.KeyStateHandler()
         self.push_handlers(self.keys)
 
         clock.schedule_interval(self.update, 1.0/60)
         self.map = LevelMap()
+        self.prisioner = Prisioner(self.map)
 
     def update(self, dt):
-        if self.keys[key.LEFT]:
-            self.map.move_camera(-1, 0)
-        if self.keys[key.RIGHT]:
-            self.map.move_camera(1, 0)
-        if self.keys[key.UP]:
-            self.map.move_camera(0, 1)
-        if self.keys[key.DOWN]:
-            self.map.move_camera(0, -1)
+        self.prisioner.update(self)
 
     def on_draw(self):
         self.clear()
         self.map.draw()
+        self.prisioner.draw()
