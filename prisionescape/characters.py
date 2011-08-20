@@ -1,4 +1,4 @@
-from prisionescape.geometry import Position
+from prisionescape.geometry import Rectangle
 from pyglet.graphics import Batch
 from pyglet.resource import image
 from pyglet.sprite import Sprite
@@ -10,26 +10,27 @@ class Character(object):
     batch = Batch()
 
     def __init__(self, map):
-        self.position = Position()
-        self.sprite = None
+        self.rect = Rectangle()
         self.map = map
+        self._sprite = None
 
     def draw(self):
         self.sprite.draw()
 
-    def update(self, window):
-        if window.keys[key.LEFT]:
-            self.position.move(-1, 0)
-        if window.keys[key.RIGHT]:
-            self.position.move(1, 0)
-        if window.keys[key.UP]:
-            self.position.move(0, 1)
-        if window.keys[key.DOWN]:
-            self.position.move(0, -1)
-        self._adjust_position()
+    @property
+    def sprite(self):
+        return self._sprite
 
-    def _adjust_position(self):
-        self.sprite.position = self.position.xy
+    @sprite.setter
+    def sprite(self, sprite):
+        self._sprite = sprite
+        self.rect.x = sprite.x
+        self.rect.y = sprite.y
+        self.rect.width = sprite.width
+        self.rect.height = sprite.height
+
+    def _adjust_rectangle(self):
+        self.sprite.position = self.rect.topleft.xy
 
 
 class Prisioner(Character):
@@ -41,4 +42,12 @@ class Prisioner(Character):
         self.sprite = Sprite(image('prisioner0.png'),
                              batch=Character.batch)
 
-        self.position.set(40, 40)
+        self.speed = 3
+
+        self.rect.go_to(40, 40)
+        self._adjust_rectangle()
+
+    def update(self, window):
+        pass
+
+

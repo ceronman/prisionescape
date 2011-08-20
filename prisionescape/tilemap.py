@@ -1,4 +1,4 @@
-from prisionescape.geometry import Position
+from prisionescape.geometry import Position, Rectangle
 from pyglet import resource
 from pyglet.graphics import Batch
 from pyglet.sprite import Sprite
@@ -8,6 +8,10 @@ class Tile(Sprite):
 
     def __init__(self, image, batch):
         super(Tile, self).__init__(image, batch=batch)
+
+    @property
+    def rect(self):
+        return Rectangle(self.x, self.y, self.width, self.height)
 
 
 class TileMap(object):
@@ -55,6 +59,11 @@ class TileMap(object):
     def move_camera(self, x, y):
         self.camera_position.move(x, y)
         self._adjust_position()
+
+    def get_tile_at(self, x, y):
+        tile_x = x / self.tile_width
+        tile_y = y / self.tile_height
+        return self.tiles[tile_y][tile_x]
 
     def _adjust_position(self):
         x, y = self.camera_position.xy
