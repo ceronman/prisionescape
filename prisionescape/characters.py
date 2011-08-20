@@ -62,6 +62,8 @@ class Prisioner(Character):
                      'prisioner_back_push.png']
     }
 
+    SCROLL_MARGIN = 100
+
     def __init__(self, map):
         super(Prisioner, self).__init__(map)
 
@@ -79,7 +81,6 @@ class Prisioner(Character):
 
     def update(self, window):
         direction = Vector(0, 0)
-        pushing = False
         if window.keys[key.LEFT]:
             direction.x = -1
             self.side = Side.LEFT
@@ -108,6 +109,7 @@ class Prisioner(Character):
             self.rect.move(direction.x, direction.y)
             self._check_map_collision(direction.x, direction.y)
             self._adjust_rectangle()
+            self._update_camera(window)
 
     def _check_map_collision(self, direction_x, direction_y):
         rect = self.rect
@@ -145,6 +147,19 @@ class Prisioner(Character):
 
     def _update_step(self):
         self.step = next(self.frame_steps)
+
+    def _update_camera(self, window):
+        if (self.rect.left - window.camera_rect.left) < self.SCROLL_MARGIN:
+            window.camera_rect.left = self.rect.left - self.SCROLL_MARGIN
+
+        if (window.camera_rect.right - self.rect.right) < self.SCROLL_MARGIN:
+            window.camera_rect.right = self.rect.right + self.SCROLL_MARGIN
+
+        if (self.rect.bottom - window.camera_rect.bottom) < self.SCROLL_MARGIN:
+            window.camera_rect.bottom = self.rect.bottom - self.SCROLL_MARGIN
+
+        if (window.camera_rect.top - self.rect.top) < self.SCROLL_MARGIN:
+            window.camera_rect.top = self.rect.top + self.SCROLL_MARGIN
 
     def _load_images(self):
         self.images = {}
