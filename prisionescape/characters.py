@@ -118,26 +118,26 @@ class Prisioner(Character):
             tile1 = self.map.get_tile_at(rect.right + 1, rect.top - speed)
             tile2 = self.map.get_tile_at(rect.right + 1, rect.center.y)
             tile3 = self.map.get_tile_at(rect.right + 1, rect.bottom + speed)
-            tile = tile1 or tile2 or tile3
+            tile = self.map.get_solid_tiles([tile1, tile2, tile3])
             if tile is not None:
                 rect.right = tile.rect.left - 1
         if direction_x < 0:
             tile1 = self.map.get_tile_at(rect.left - 1, rect.top - speed)
             tile2 = self.map.get_tile_at(rect.left - 1, rect.center.y)
             tile3 = self.map.get_tile_at(rect.left - 1, rect.bottom + speed)
-            tile = tile1 or tile2 or tile3
+            tile = self.map.get_solid_tiles([tile1, tile2, tile3])
             if tile is not None:
                 rect.left = tile.rect.right + 1
         if direction_y < 0:
             tile1 = self.map.get_tile_at(rect.left + speed, rect.bottom - 1)
             tile2 = self.map.get_tile_at(rect.right - speed, rect.bottom - 1)
-            tile = tile1 or tile2
+            tile = self.map.get_solid_tiles([tile1, tile2])
             if tile is not None:
                 rect.bottom = tile.rect.top + 1
         if direction_y > 0:
             tile1 = self.map.get_tile_at(rect.left + speed, rect.top + 1)
             tile2 = self.map.get_tile_at(rect.right - speed, rect.top + 1)
-            tile = tile1 or tile2
+            tile = self.map.get_solid_tiles([tile1, tile2])
             if tile is not None:
                 rect.top = tile.rect.bottom - 1
 
